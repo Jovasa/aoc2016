@@ -15,10 +15,16 @@ struct Bot {
 }
 
 
-impl fmt::Display for Bot  {
+impl fmt::Display for Bot {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let low = match self.low { Some(t) => t, None => -1 };
-        let high = match self.high { Some(t) => t, None => -1 };
+        let low = match self.low {
+            Some(t) => t,
+            None => -1
+        };
+        let high = match self.high {
+            Some(t) => t,
+            None => -1
+        };
         write!(f, "{} to {}. {} to {}.", low, self.low_to.unwrap(), high, self.high_to.unwrap())
     }
 }
@@ -32,6 +38,8 @@ fn main() {
 
     let mut bots = BTreeMap::new();
 
+    let output_offset = 512;
+
     for line in reader.lines() {
         let line = line.unwrap();
         match pattern.captures(&line) {
@@ -40,8 +48,8 @@ fn main() {
                 let l = cap.get(3).unwrap().as_str().parse::<i32>().unwrap();
                 let h = cap.get(5).unwrap().as_str().parse::<i32>().unwrap();
                 let mut b = bots.entry(t).or_insert(Bot { low: None, high: None, low_to: None, high_to: None });
-                b.low_to = Option::from(if cap.get(2).unwrap().as_str() == "bot" { l } else { l + 512 });
-                b.high_to = Option::from(if cap.get(4).unwrap().as_str() == "bot" { h } else { h + 512 });
+                b.low_to = Option::from(if cap.get(2).unwrap().as_str() == "bot" { l } else { l + output_offset });
+                b.high_to = Option::from(if cap.get(4).unwrap().as_str() == "bot" { h } else { h + output_offset });
             }
             None => {
                 let temp = line.split(" ").collect_vec();
@@ -52,18 +60,16 @@ fn main() {
                     if b.high.is_some() { panic!() }
                     b.high = b.low;
                     b.low = Some(v);
-                }
-                else if b.low.is_some() {
+                } else if b.low.is_some() {
                     if b.high.is_some() { panic!() }
                     b.high = Some(v);
-                }
-                else {
+                } else {
                     b.low = Some(v);
                 }
             }
         }
     }
-
+    let mut outputs = BTreeMap::new();
     loop {
         let mut temp = BTreeMap::new();
 
@@ -75,10 +81,11 @@ fn main() {
                 if v.low.unwrap() > v.high.unwrap() {
                     panic!()
                 }
-                if v.low_to.unwrap() < 512 {
+                let low_to = v.low_to.unwrap();
+                if low_to < output_offset {
                     let mut t1 = temp
-                        .entry(v.low_to.unwrap())
-                        .or_insert(bots.get(&v.low_to.unwrap()).unwrap().clone());
+                        .entry(low_to)
+                        .or_insert(bots.get(&low_to).unwrap().clone());
                     if t1.low.is_some() && t1.low.unwrap() > v.low.unwrap() {
                         if t1.high.is_some() { panic!() }
                         t1.high = t1.low;
@@ -89,11 +96,15 @@ fn main() {
                     } else {
                         t1.low = v.low;
                     }
+                } else {
+                    outputs.entry(low_to - output_offset).or_insert(v.low.unwrap());
                 }
-                if v.high_to.unwrap() < 512 {
+
+                let high_to = v.high_to.unwrap();
+                if high_to < output_offset {
                     let mut t2 = temp
-                        .entry(v.high_to.unwrap())
-                        .or_insert(bots.get(&v.high_to.unwrap()).unwrap().clone());
+                        .entry(high_to)
+                        .or_insert(bots.get(&high_to).unwrap().clone());
                     if t2.low.is_some() && t2.low.unwrap() > v.high.unwrap() {
                         if t2.high.is_some() { panic!() }
                         t2.high = t2.low;
@@ -104,16 +115,19 @@ fn main() {
                     } else {
                         t2.low = v.high;
                     }
+                } else {
+                    outputs.entry(high_to - output_offset).or_insert(v.high.unwrap());
                 }
-            }
-            else {
+            } else {
                 if !temp.contains_key(k) {
                     temp.insert(*k, *v);
                 }
             }
         }
 
-        if temp.len() == 0 { break }
+        if temp.len() == 0 { break; }
         bots = temp;
     }
+
+    println!("{}", outputs.get(&0).unwrap() * outputs.get(&1).unwrap() * outputs.get(&2).unwrap())
 }
