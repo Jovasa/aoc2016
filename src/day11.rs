@@ -18,6 +18,7 @@ const FLOOR4: u64 = FLOOR_OFFSET * 3;
 
 const CURRENT_FLOOR_OFFSET: u64 = 60;
 
+
 fn is_valid_floor(in_: u64) -> bool {
     let both = in_ & (in_ >> GENERATOR_OFFSET);
     if both == 0 {
@@ -69,8 +70,8 @@ fn main() {
                                 let new_floor = current_floor - 1;
                                 let new_state = sec_obj_removed |
                                     new_floor << CURRENT_FLOOR_OFFSET |
-                                    c << (new_floor * FLOOR_OFFSET) |
-                                    o << (new_floor * FLOOR_OFFSET);
+                                    c >> FLOOR_OFFSET |
+                                    o >> FLOOR_OFFSET;
                                 if check_all_floors(new_state) && !all.contains(&new_state) {
                                     temp.insert(new_state);
                                     all.insert(new_state);
@@ -80,8 +81,8 @@ fn main() {
                                 let new_floor = current_floor + 1;
                                 let new_state = sec_obj_removed |
                                     new_floor << CURRENT_FLOOR_OFFSET |
-                                    c << (new_floor * FLOOR_OFFSET) |
-                                    o << (new_floor * FLOOR_OFFSET);
+                                    c << FLOOR_OFFSET |
+                                    o << FLOOR_OFFSET;
                                 if check_all_floors(new_state) && !all.contains(&new_state) {
                                     temp.insert(new_state);
                                     all.insert(new_state);
@@ -91,7 +92,7 @@ fn main() {
                     }
                 }
             }
-            if item == 3 << CURRENT_FLOOR_OFFSET | (FLOOR << FLOOR3) {
+            if item == 3 << CURRENT_FLOOR_OFFSET | (FLOOR << FLOOR4) {
                 println!("{}", iters);
                 return;
             }
