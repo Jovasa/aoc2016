@@ -43,22 +43,63 @@ fn main() {
         1 << (RUTHENIUM + FLOOR1) |
         1 << (COBALT + GENERATOR_OFFSET + FLOOR1) |
         1 << (COBALT + FLOOR1) |
-        1 << CURRENT_FLOOR_OFFSET;
+        0 << CURRENT_FLOOR_OFFSET;
 
     let mut iters = 0;
     let mut current_set = HashSet::new();
 
     current_set.insert(start);
 
+    let mut all = HashSet::new();
+
     loop {
         let mut temp = HashSet::new();
         for item in current_set {
             let current_floor = item >> CURRENT_FLOOR_OFFSET;
-            temp.insert(item);
-            if item == 4 << CURRENT_FLOOR_OFFSET | (FLOOR << FLOOR3) {
+            for chip in 0..5 {
+                let c = item & (1 << (chip + current_floor * FLOOR_OFFSET));
+                if c != 0 {
+                    let current_chip_removed = item ^ c ^ (current_floor << CURRENT_FLOOR_OFFSET);
+
+                    for obj in 0..10 {
+                        let o = current_chip_removed & (1 << (obj + current_floor * FLOOR_OFFSET));
+                        if o != 0 || chip == obj {
+                            let sec_obj_removed = current_chip_removed ^ o;
+                            if current_floor != 0 {
+                                let new_floor = current_floor - 1;
+                                let new_state = sec_obj_removed |
+                                    new_floor << CURRENT_FLOOR_OFFSET |
+                                    c << (new_floor * FLOOR_OFFSET) |
+                                    o << (new_floor * FLOOR_OFFSET);
+                                if check_all_floors(new_state) && !all.contains(&new_state) {
+                                    temp.insert(new_state);
+                                    all.insert(new_state);
+                                }
+                            }
+                            if current_floor != 3 {
+                                let new_floor = current_floor + 1;
+                                let new_state = sec_obj_removed |
+                                    new_floor << CURRENT_FLOOR_OFFSET |
+                                    c << (new_floor * FLOOR_OFFSET) |
+                                    o << (new_floor * FLOOR_OFFSET);
+                                if check_all_floors(new_state) && !all.contains(&new_state) {
+                                    temp.insert(new_state);
+                                    all.insert(new_state);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if item == 3 << CURRENT_FLOOR_OFFSET | (FLOOR << FLOOR3) {
                 println!("{}", iters);
                 return;
             }
+        }
+        println!("{} {}", iters, temp.len());
+        if temp.len() == 0 {
+            println!("Failed after {iters} iterations");
+            break;
         }
         current_set = temp;
         iters += 1;
