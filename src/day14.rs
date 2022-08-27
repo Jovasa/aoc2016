@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use md5;
 use hex;
 
@@ -7,7 +6,7 @@ fn main() {
     let mut end = u32::MAX;
 
     let mut looking_for_five: Vec<(char, u32)> = Vec::new();
-    let mut valids =
+    let mut valids = Vec::new();
 
     for i in 0.. {
         let a =
@@ -23,10 +22,21 @@ fn main() {
                               looking_for_five.push((c, 1000));
                           }
                           else if p_count == 4 {
-                              for (o_c, u) in looking_for_five {
-                                  if o_c == c {
-
+                              let mut to_remove = Vec::new();
+                              for (indx, (o_c, u)) in looking_for_five.iter().enumerate() {
+                                  if o_c == &c {
+                                      if u != &1000 {
+                                          println!("fouund {} {}", i, valids.len());
+                                          valids.push(i + u - 1000);
+                                      }
+                                      to_remove.push(indx);
                                   }
+                              }
+                              for indx in to_remove.iter().rev() {
+                                  looking_for_five.remove(*indx);
+                              }
+                              if valids.len() >= 64 && end == u32::MAX {
+                                  end = i + 1000;
                               }
                           }
                           (p_count + 1, c)
@@ -43,8 +53,14 @@ fn main() {
                 t.1 -= 1;
             }
         }
-        while looking_for_five[0].1 == 0 {
+        while looking_for_five.len() != 0 && looking_for_five[0].1 == 0 {
             looking_for_five.remove(0);
         }
     }
+
+    valids.sort();
+    for v in valids {
+        println!("{v}");
+    }
+    // println!("{} {}", valids[63], valids.len());
 }
