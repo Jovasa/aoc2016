@@ -17,7 +17,6 @@ fn main() {
                     println!("{}", s);
                 }
                 if temp_length > longest {
-                    println!("{}", temp_length);
                     longest = temp_length;
                 }
                 continue;
@@ -25,20 +24,20 @@ fn main() {
             let vec = s.bytes().collect::<Vec<u8>>();
             let a = md5::compute(vec).to_vec();
             let te: String = hex::encode(a);
-            if x != 3 && te.chars().nth(3).unwrap().to_digit(16).unwrap() > 9 {
+            if x != 3 && te.chars().nth(3).unwrap().to_digit(16).unwrap() > 10 {
                 temp.insert((x + 1, y, [&s, "R"].concat().to_string()));
             }
-            if x != 0 && te.chars().nth(2).unwrap().to_digit(16).unwrap() > 9 {
+            if x != 0 && te.chars().nth(2).unwrap().to_digit(16).unwrap() > 10 {
                 temp.insert((x - 1, y, [&s, "L"].concat().to_string()));
             }
-            if y != 3 && te.chars().nth(1).unwrap().to_digit(16).unwrap() > 9 {
+            if y != 3 && te.chars().nth(1).unwrap().to_digit(16).unwrap() > 10 {
                 temp.insert((x, y + 1, [&s, "D"].concat().to_string()));
             }
-            if y != 0 && te.chars().nth(0).unwrap().to_digit(16).unwrap() > 9 {
+            if y != 0 && te.chars().nth(0).unwrap().to_digit(16).unwrap() > 10 {
                 temp.insert((x, y - 1, [&s, "U"].concat().to_string()));
             }
         }
-        println!("Possibilities {}", temp.len());
         positions = temp;
     }
+    println!("{}", longest);
 }
