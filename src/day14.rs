@@ -9,11 +9,15 @@ fn main() {
     let mut valids = Vec::new();
 
     for i in 0.. {
+        let vec = [secret.clone(), i.to_string()].concat().bytes().collect::<Vec<u8>>();
         let a =
-            md5::compute([secret.clone(), i.to_string()].concat().bytes().collect::<Vec<u8>>()).to_vec();
-        let hex: String = hex::encode(a);
-
-        hex
+            md5::compute(vec).to_vec();
+        let mut te: String = hex::encode(a);
+        for _ in 0..2016 {
+            let data = te.bytes().collect::<Vec<u8>>();
+            te = hex::encode(md5::compute(data).to_vec());
+        }
+        te
             .chars()
             .fold((0, '_'),
                   |(p_count, p_c), c|
