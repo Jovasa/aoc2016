@@ -56,12 +56,16 @@ fn main() {
     let mut minimum_distance = i32::MAX;
     for t in (0..places.len() as u32).permutations(places.len()) {
         if t[0] != 0 { continue; };
+        let mut last_place = 0;
         let temp = t
             .iter()
             .tuple_windows()
-            .fold(0, |p, (f, s)| p + distances.get(&(*f, *s)).unwrap());
+            .fold(0, |p, (f, s)| {
+                last_place = *s;
+                p + distances.get(&(*f, *s)).unwrap()
+            });
 
-        minimum_distance = minimum_distance.min(temp);
+        minimum_distance = minimum_distance.min(temp + distances.get(&(0, last_place)).unwrap());
     }
     println!("{}", minimum_distance);
 }
