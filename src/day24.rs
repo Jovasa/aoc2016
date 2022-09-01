@@ -23,8 +23,10 @@ fn main() {
 
     let mut distances = HashMap::new();
 
-    for (p, d) in places {
+    for (p, d) in &places {
         let mut visited = HashSet::new();
+        let p = *p;
+        let d = *d;
         visited.insert(p);
 
         let mut distance_from_start = 1;
@@ -51,9 +53,17 @@ fn main() {
         }
     }
 
-    for (k, v) in distances {
-        println!("{} -> {} : {}", k.0, k.1, v);
+    let mut minimum_distance = i32::MAX;
+    for t in (0..places.len() as u32).permutations(places.len()) {
+        if t[0] != 0 { continue; };
+        let temp = t
+            .iter()
+            .tuple_windows()
+            .fold(0, |p, (f, s)| p + distances.get(&(*f, *s)).unwrap());
+
+        minimum_distance = minimum_distance.min(temp);
     }
+    println!("{}", minimum_distance);
 }
 
 fn check(floor_plan: &Vec<Vec<char>>,
